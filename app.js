@@ -5,11 +5,24 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let entries  = [];
-let authMode = 'login'; // 'login' | 'signup'
+let entries   = [];
+let authMode  = 'login'; // 'login' | 'signup' | 'forgot'
+let viewMonth = new Date();
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
+  // Supabase puts #access_token=...&type=recovery in the URL after a reset link click
+  const hash   = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#', '?'));
+  const type   = params.get('type');
+
+  if (type === 'recovery') {
+    // User arrived via a password reset email — show the set-new-password screen
+    showScreen('reset');
+    hideLoading();
+    return;
+  }
+
   const { data: { session } } = await db.auth.getSession();
   if (session) {
     await enterApp();
@@ -18,9 +31,10 @@ async function init() {
   }
   hideLoading();
 
-  // Listen for auth changes (e.g. email confirmation redirect)
   db.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
+      // Don't redirect if we're in the middle of a password reset
+      if (document.getElementById('reset-screen').style.display !== 'none') return;
       await enterApp();
     } else if (event === 'SIGNED_OUT') {
       entries = [];
@@ -32,12 +46,29 @@ async function init() {
 // ─── AUTH ─────────────────────────────────────────────────────────────────────
 function switchTab(mode) {
   authMode = mode;
+
+  const isForgot = mode === 'forgot';
+
+  // Tab highlight
   document.querySelectorAll('.auth-tab').forEach((t, i) => {
     t.classList.toggle('active', (i === 0 && mode === 'login') || (i === 1 && mode === 'signup'));
   });
-  document.getElementById('confirm-field').style.display = mode === 'signup' ? '' : 'none';
-  document.getElementById('auth-submit').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+
+  // Show/hide fields
+  document.getElementById('password-field').style.display = isForgot ? 'none' : '';
+  document.getElementById('confirm-field').style.display  = mode === 'signup' ? '' : 'none';
+
+  // Button label
+  const labels = { login: 'Sign In', signup: 'Create Account', forgot: 'Send Reset Link' };
+  document.getElementById('auth-submit').textContent = labels[mode];
+
+  // Forgot link label
+  document.getElementById('forgot-btn').textContent = isForgot ? '← Back to sign in' : 'Forgot password?';
+  document.getElementById('forgot-btn').onclick = isForgot ? () => switchTab('login') : () => switchTab('forgot');
+
+  // Clear errors
   document.getElementById('auth-error').textContent = '';
+  document.getElementById('auth-error').style.color = 'var(--danger)';
 }
 
 async function handleAuth() {
@@ -48,8 +79,30 @@ async function handleAuth() {
   const btn      = document.getElementById('auth-submit');
 
   errEl.textContent = '';
+  errEl.style.color = 'var(--danger)';
 
-  if (!email || !password) { errEl.textContent = 'Email and password required.'; return; }
+  if (!email) { errEl.textContent = 'Please enter your email.'; return; }
+
+  // ── Forgot password ──
+  if (authMode === 'forgot') {
+    btn.disabled = true;
+    btn.textContent = '...';
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname,
+    });
+    btn.disabled = false;
+    btn.textContent = 'Send Reset Link';
+    if (error) {
+      errEl.textContent = error.message;
+    } else {
+      errEl.style.color = 'var(--accent)';
+      errEl.textContent = 'Reset link sent — check your email!';
+    }
+    return;
+  }
+
+  // ── Login / Signup ──
+  if (!password) { errEl.textContent = 'Please enter your password.'; return; }
 
   if (authMode === 'signup') {
     if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
@@ -66,7 +119,6 @@ async function handleAuth() {
       btn.disabled = false;
       btn.textContent = 'Sign In';
     }
-    // onAuthStateChange handles success
   } else {
     const { error } = await db.auth.signUp({ email, password });
     if (error) {
@@ -82,12 +134,44 @@ async function handleAuth() {
   }
 }
 
+// ─── SET NEW PASSWORD (after clicking reset link) ─────────────────────────────
+async function handleSetNewPassword() {
+  const password = document.getElementById('reset-password').value;
+  const confirm  = document.getElementById('reset-confirm').value;
+  const errEl    = document.getElementById('reset-error');
+  const btn      = document.getElementById('reset-submit');
+
+  errEl.textContent = '';
+  errEl.style.color = 'var(--danger)';
+
+  if (!password) { errEl.textContent = 'Please enter a new password.'; return; }
+  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'SAVING...';
+
+  const { error } = await db.auth.updateUser({ password });
+
+  if (error) {
+    errEl.textContent = error.message;
+    btn.disabled = false;
+    btn.textContent = 'Set New Password';
+  } else {
+    showToast('Password updated! Signing you in...');
+    // Clean the hash from the URL so a refresh doesn't re-trigger reset mode
+    history.replaceState(null, '', window.location.pathname);
+    setTimeout(() => enterApp(), 1200);
+  }
+}
+
 async function signOut() {
   await db.auth.signOut();
 }
 
 // ─── APP ENTRY ────────────────────────────────────────────────────────────────
 async function enterApp() {
+  viewMonth = new Date();
   showScreen('app');
   await loadEntries();
 }
@@ -147,11 +231,11 @@ async function addEntry() {
   if (error) { showToast('Error saving workout'); console.error(error); return; }
 
   entries.unshift(data);
+  viewMonth = new Date();
   renderHistory();
   updateStats();
   updateSuggestions();
 
-  // Clear fields (keep name for quick repeat logging)
   document.getElementById('input-sets').value   = '';
   document.getElementById('input-reps').value   = '';
   document.getElementById('input-weight').value = '';
@@ -178,25 +262,50 @@ async function deleteEntry(id) {
   showToast('Entry removed');
 }
 
+// ─── MONTH NAV ────────────────────────────────────────────────────────────────
+function shiftMonth(delta) {
+  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + delta, 1);
+  renderHistory();
+}
+
+function updateCalLabel() {
+  const label = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-month').textContent = label.toUpperCase();
+
+  const now = new Date();
+  const isCurrentMonth =
+    viewMonth.getFullYear() === now.getFullYear() &&
+    viewMonth.getMonth()    === now.getMonth();
+  document.querySelectorAll('.cal-arrow')[1].disabled = isCurrentMonth;
+}
+
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function renderHistory() {
+  updateCalLabel();
+
   const container = document.getElementById('history');
   const query = document.getElementById('search')?.value?.toLowerCase() || '';
 
-  const filtered = query
-    ? entries.filter(e => e.name.toLowerCase().includes(query))
-    : entries;
+  const monthStart = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+  const monthEnd   = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0, 23, 59, 59);
+
+  let filtered = entries.filter(e => {
+    const d = new Date(e.created_at);
+    return d >= monthStart && d <= monthEnd;
+  });
+
+  if (query) filtered = filtered.filter(e => e.name.toLowerCase().includes(query));
 
   if (filtered.length === 0) {
+    const monthName = viewMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     container.innerHTML = `
       <div class="empty">
-        <span class="empty-icon">🏋️</span>
-        ${query ? 'No exercises match your search.' : 'No workouts logged yet.<br>Add your first exercise above.'}
+        <span class="empty-icon">📅</span>
+        ${query ? 'No exercises match your search.' : `No workouts logged in ${monthName}.`}
       </div>`;
     return;
   }
 
-  // Group by calendar date
   const groups = {};
   filtered.forEach(e => {
     const d = new Date(e.created_at);
@@ -221,7 +330,7 @@ function renderHistory() {
               <div class="entry-meta">
                 ${e.sets   ? `<span class="meta-chip"><span class="chip-label">Sets</span> ${e.sets}</span>` : ''}
                 ${e.reps   ? `<span class="meta-chip"><span class="chip-label">Reps</span> ${e.reps}</span>` : ''}
-                ${e.weight ? `<span class="meta-chip"><span class="chip-label">Weight</span> ${esc(e.weight)}</span>` : ''}
+                ${e.weight ? `<span class="meta-chip"><span class="chip-label">Weight</span> ${esc(e.weight)} lbs</span>` : ''}
               </div>
               ${e.notes ? `<div class="entry-note">${esc(e.notes)}</div>` : ''}
             </div>
@@ -251,8 +360,9 @@ function updateSuggestions() {
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
 function showScreen(name) {
-  document.getElementById('auth-screen').style.display = name === 'auth' ? '' : 'none';
-  document.getElementById('app-screen').style.display  = name === 'app'  ? '' : 'none';
+  document.getElementById('auth-screen').style.display  = name === 'auth'  ? '' : 'none';
+  document.getElementById('reset-screen').style.display = name === 'reset' ? '' : 'none';
+  document.getElementById('app-screen').style.display   = name === 'app'   ? '' : 'none';
 }
 
 function hideLoading() {
@@ -276,15 +386,15 @@ function esc(str) {
     .replace(/"/g, '&quot;');
 }
 
-// Enter key submits form (except in textarea)
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('app-screen').style.display !== 'none') {
-    if (e.target.id !== 'input-notes' && e.target.tagName !== 'TEXTAREA') {
-      addEntry();
-    }
+    if (e.target.id !== 'input-notes' && e.target.tagName !== 'TEXTAREA') addEntry();
   }
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') {
     if (e.target.tagName === 'INPUT') handleAuth();
+  }
+  if (e.key === 'Enter' && document.getElementById('reset-screen').style.display !== 'none') {
+    if (e.target.tagName === 'INPUT') handleSetNewPassword();
   }
 });
 

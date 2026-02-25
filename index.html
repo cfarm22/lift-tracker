@@ -26,7 +26,7 @@
         <label>Email</label>
         <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
       </div>
-      <div class="field">
+      <div class="field" id="password-field">
         <label>Password</label>
         <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
       </div>
@@ -36,6 +36,27 @@
       </div>
       <div class="auth-error" id="auth-error"></div>
       <button class="btn-auth" id="auth-submit" onclick="handleAuth()">Sign In</button>
+      <button class="btn-forgot" id="forgot-btn" onclick="switchTab('forgot')">Forgot password?</button>
+    </div>
+  </div>
+</div>
+
+<!-- SET NEW PASSWORD SCREEN (shown after clicking reset email link) -->
+<div id="reset-screen" class="screen" style="display:none">
+  <div class="auth-wrap">
+    <div class="auth-logo">LIFT</div>
+    <div class="auth-tagline">Choose a new password.</div>
+    <div class="auth-form">
+      <div class="field">
+        <label>New Password</label>
+        <input type="password" id="reset-password" placeholder="••••••••">
+      </div>
+      <div class="field">
+        <label>Confirm New Password</label>
+        <input type="password" id="reset-confirm" placeholder="••••••••">
+      </div>
+      <div class="auth-error" id="reset-error"></div>
+      <button class="btn-auth" id="reset-submit" onclick="handleSetNewPassword()">Set New Password</button>
     </div>
   </div>
 </div>
@@ -77,8 +98,8 @@
             <input type="number" id="input-reps" placeholder="10" min="1" max="999">
           </div>
           <div class="field">
-            <label>Weight</label>
-            <input type="text" id="input-weight" placeholder="80kg">
+            <label>Weight (lbs)</label>
+            <input type="text" id="input-weight" placeholder="e.g. 135">
           </div>
         </div>
         <div class="field">
@@ -96,6 +117,11 @@
         <div class="search-wrap">
           <input type="text" id="search" placeholder="Search exercises..." oninput="renderHistory()">
         </div>
+      </div>
+      <div class="cal-nav">
+        <button class="cal-arrow" onclick="shiftMonth(-1)">&#8592;</button>
+        <span class="cal-month" id="cal-month"></span>
+        <button class="cal-arrow" onclick="shiftMonth(1)">&#8594;</button>
       </div>
       <div class="history-body" id="history"></div>
     </div>

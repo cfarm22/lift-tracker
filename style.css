@@ -5,7 +5,6 @@
   --border: #272727;
   --accent: #c8f135;
   --accent-dim: rgba(200,241,53,0.1);
-  --accent-dark: #a8d01e;
   --text: #f0f0f0;
   --text-muted: #5a5a5a;
   --text-mid: #888;
@@ -54,7 +53,6 @@ body {
 
 .auth-tabs {
   display: flex;
-  gap: 0;
   margin-bottom: 28px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -169,10 +167,7 @@ header {
   transition: all 0.15s;
 }
 
-.btn-signout:hover {
-  color: var(--text);
-  border-color: var(--text-mid);
-}
+.btn-signout:hover { color: var(--text); border-color: var(--text-mid); }
 
 /* ─── LAYOUT ─────────────────────────────────────── */
 
@@ -235,6 +230,50 @@ header {
 .search-wrap input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* ─── CALENDAR NAV ───────────────────────────────── */
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.cal-month {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: 2px;
+  color: var(--text);
+}
+
+.cal-arrow {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  font-size: 14px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.cal-arrow:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.cal-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
 }
 
 /* ─── FORM ───────────────────────────────────────── */
@@ -350,17 +389,9 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 .entry.flash { border-left: 3px solid var(--accent); }
 
-.entry-name {
-  font-weight: 500;
-  font-size: 15px;
-  margin-bottom: 5px;
-}
+.entry-name { font-weight: 500; font-size: 15px; margin-bottom: 5px; }
 
-.entry-meta {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
+.entry-meta { display: flex; gap: 14px; flex-wrap: wrap; }
 
 .meta-chip {
   font-family: 'DM Mono', monospace;
@@ -465,3 +496,22 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── FORGOT PASSWORD ────────────────────────────── */
+
+.btn-forgot {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-forgot:hover { color: var(--text); }
