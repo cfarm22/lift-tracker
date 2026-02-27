@@ -19,7 +19,7 @@
       <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
       <button class="auth-tab" onclick="switchTab('signup')">Create Account</button>
     </div>
-    <div class="auth-form" id="auth-form">
+    <div class="auth-form">
       <div class="field">
         <label>Email</label>
         <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
@@ -73,94 +73,134 @@
     </div>
   </header>
 
-  <div class="container">
+  <!-- NAV TABS -->
+  <nav class="app-nav">
+    <button class="nav-tab active" onclick="switchAppTab('log')">Log</button>
+    <button class="nav-tab" onclick="switchAppTab('plan')">Plan</button>
+  </nav>
 
-    <!-- LOG FORM -->
-    <div class="panel" id="form-panel">
-      <div class="panel-header">
-        <div class="panel-title">Log Exercise</div>
-      </div>
-      <div class="form-body">
+  <!-- LOG TAB -->
+  <div id="tab-log" class="tab-content">
+    <div class="container">
 
-        <!-- EXERCISE PICKER -->
-        <div class="field">
-          <label>Exercise</label>
-          <div class="exercise-input-wrap">
-            <input type="text" id="input-name" placeholder="Search or type exercise..." autocomplete="off"
-              oninput="filterExercises(this.value)" onfocus="showPicker()" onblur="hidePicker()">
-            <div class="exercise-picker" id="exercise-picker"></div>
-          </div>
+      <div class="panel" id="form-panel">
+        <div class="panel-header">
+          <div class="panel-title">Log Exercise</div>
         </div>
-
-        <!-- DEFAULT MODE -->
-        <div id="simple-mode">
-          <div class="row-3">
-            <div class="field">
-              <label>Sets</label>
-              <select id="input-sets">
-                <option value="">—</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3" selected>3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Reps</label>
-              <input type="number" id="input-reps" placeholder="10" min="1" max="999">
-            </div>
-            <div class="field">
-              <label>Weight (lbs)</label>
-              <input type="text" id="input-weight" placeholder="135">
+        <div class="form-body">
+          <div class="field">
+            <label>Exercise</label>
+            <div class="exercise-input-wrap">
+              <input type="text" id="input-name" placeholder="Search or type exercise..." autocomplete="off"
+                oninput="filterExercises(this.value)" onfocus="showPicker()" onblur="hidePicker()">
+              <div class="exercise-picker" id="exercise-picker"></div>
             </div>
           </div>
+          <div id="simple-mode">
+            <div class="row-3">
+              <div class="field">
+                <label>Sets</label>
+                <select id="input-sets">
+                  <option value="">—</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Reps</label>
+                <input type="number" id="input-reps" placeholder="10" min="1" max="999">
+              </div>
+              <div class="field">
+                <label>Weight (lbs)</label>
+                <input type="text" id="input-weight" placeholder="135">
+              </div>
+            </div>
+          </div>
+          <label class="per-set-toggle">
+            <input type="checkbox" id="per-set-checkbox" onchange="togglePerSet()">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Different weight or reps per set</span>
+          </label>
+          <div id="per-set-mode" style="display:none">
+            <div class="set-builder" id="set-builder"></div>
+            <button class="btn-add-set" onclick="addSetRow()">+ Add Set</button>
+          </div>
+          <div class="field">
+            <label>Notes</label>
+            <textarea id="input-notes" placeholder="Form cues, how it felt..."></textarea>
+          </div>
+          <button class="btn-add" id="btn-add" onclick="addEntry()">+ ADD TO LOG</button>
         </div>
-
-        <!-- TOGGLE -->
-        <label class="per-set-toggle">
-          <input type="checkbox" id="per-set-checkbox" onchange="togglePerSet()">
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          <span class="toggle-label">Different weight or reps per set</span>
-        </label>
-
-        <!-- PER-SET BUILDER -->
-        <div id="per-set-mode" style="display:none">
-          <div class="set-builder" id="set-builder"></div>
-          <button class="btn-add-set" onclick="addSetRow()">+ Add Set</button>
-        </div>
-
-        <div class="field">
-          <label>Notes</label>
-          <textarea id="input-notes" placeholder="Form cues, how it felt..."></textarea>
-        </div>
-        <button class="btn-add" id="btn-add" onclick="addEntry()">+ ADD TO LOG</button>
-
       </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Workout History</div>
+          <div class="search-wrap">
+            <input type="text" id="search" placeholder="Search exercises..." oninput="renderHistory()">
+          </div>
+        </div>
+        <div class="cal-nav">
+          <button class="cal-arrow" onclick="shiftMonth(-1)">&#8592;</button>
+          <span class="cal-month" id="cal-month"></span>
+          <button class="cal-arrow" onclick="shiftMonth(1)">&#8594;</button>
+        </div>
+        <div class="history-body" id="history"></div>
+      </div>
+
     </div>
-
-    <!-- HISTORY -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">Workout History</div>
-        <div class="search-wrap">
-          <input type="text" id="search" placeholder="Search exercises..." oninput="renderHistory()">
-        </div>
-      </div>
-      <div class="cal-nav">
-        <button class="cal-arrow" onclick="shiftMonth(-1)">&#8592;</button>
-        <span class="cal-month" id="cal-month"></span>
-        <button class="cal-arrow" onclick="shiftMonth(1)">&#8594;</button>
-      </div>
-      <div class="history-body" id="history"></div>
-    </div>
-
   </div>
+
+  <!-- PLAN TAB -->
+  <div id="tab-plan" class="tab-content" style="display:none">
+    <div class="plan-container">
+
+      <!-- CALENDAR -->
+      <div class="panel calendar-panel">
+        <div class="panel-header">
+          <div class="cal-nav-inline">
+            <button class="cal-arrow" onclick="shiftPlanMonth(-1)">&#8592;</button>
+            <div class="panel-title" id="plan-cal-month"></div>
+            <button class="cal-arrow" onclick="shiftPlanMonth(1)">&#8594;</button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </div>
+
+      <!-- DAY DETAIL -->
+      <div class="panel day-detail-panel" id="day-detail">
+        <div class="panel-header">
+          <div class="panel-title" id="day-detail-title">Select a day</div>
+        </div>
+        <div id="day-detail-body" class="day-detail-body">
+          <div class="empty">
+            <span class="empty-icon">📅</span>
+            Click any day on the calendar to view or plan that workout.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- DAY MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()" style="display:none"></div>
+<div class="modal" id="day-modal" style="display:none">
+  <div class="modal-header">
+    <div class="modal-title" id="modal-title"></div>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body" id="modal-body"></div>
 </div>
 
 <div class="toast" id="toast"></div>
