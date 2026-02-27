@@ -72,10 +72,7 @@ body {
   transition: all 0.15s;
 }
 
-.auth-tab.active {
-  background: var(--accent);
-  color: #0d0d0d;
-}
+.auth-tab.active { background: var(--accent); color: #0d0d0d; }
 
 .auth-form {
   width: 100%;
@@ -111,6 +108,22 @@ body {
 .btn-auth:active { transform: scale(0.98); }
 .btn-auth:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+.btn-forgot {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-forgot:hover { color: var(--text); }
+
 /* ─── HEADER ─────────────────────────────────────── */
 
 header {
@@ -134,11 +147,7 @@ header {
   color: var(--accent);
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
+.header-right { display: flex; align-items: center; gap: 24px; }
 
 .header-stats {
   display: flex;
@@ -148,10 +157,7 @@ header {
   color: var(--text-muted);
 }
 
-.header-stats span b {
-  color: var(--text);
-  font-weight: 500;
-}
+.header-stats span b { color: var(--text); font-weight: 500; }
 
 .btn-signout {
   background: none;
@@ -176,12 +182,12 @@ header {
   margin: 0 auto;
   padding: 40px 24px;
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 28px;
   align-items: start;
 }
 
-@media (max-width: 740px) {
+@media (max-width: 760px) {
   .container { grid-template-columns: 1fr; padding: 20px 16px; gap: 20px; }
   header { padding: 0 16px; }
   .header-stats { display: none; }
@@ -265,16 +271,8 @@ header {
   transition: all 0.15s;
 }
 
-.cal-arrow:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-dim);
-}
-
-.cal-arrow:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-}
+.cal-arrow:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.cal-arrow:disabled { opacity: 0.25; cursor: not-allowed; }
 
 /* ─── FORM ───────────────────────────────────────── */
 
@@ -316,6 +314,156 @@ input:focus, textarea:focus {
 textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* ─── PER-SET TOGGLE ─────────────────────────────── */
+
+.per-set-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-mid);
+  transition: color 0.15s;
+}
+
+.per-set-toggle:hover { color: var(--text); }
+
+.per-set-toggle input[type="checkbox"] { display: none; }
+
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.per-set-toggle input:checked + .toggle-track {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.per-set-toggle input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+
+.toggle-label { font-size: 13px; }
+
+/* ─── SET BUILDER ────────────────────────────────── */
+
+.set-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.set-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  animation: slideIn 0.15s ease;
+}
+
+.set-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 2px;
+}
+
+.set-row input {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.set-row input::placeholder { color: var(--text-muted); font-size: 13px; }
+
+.btn-remove-set {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-remove-set:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.set-builder-header {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr auto;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.set-builder-header span {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.set-builder-header span:first-child { text-align: center; }
+
+.btn-add-set {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+
+.btn-add-set:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ─── ADD BUTTON ─────────────────────────────────── */
 
 .btn-add {
   background: var(--accent);
@@ -389,8 +537,9 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 .entry.flash { border-left: 3px solid var(--accent); }
 
-.entry-name { font-weight: 500; font-size: 15px; margin-bottom: 5px; }
+.entry-name { font-weight: 500; font-size: 15px; margin-bottom: 6px; }
 
+/* Simple mode summary */
 .entry-meta { display: flex; gap: 14px; flex-wrap: wrap; }
 
 .meta-chip {
@@ -407,6 +556,46 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* Per-set table in history */
+.sets-table {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sets-table-header {
+  display: grid;
+  grid-template-columns: 36px 1fr 1fr;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+
+.sets-table-header span,
+.set-row-display span {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.set-row-display {
+  display: grid;
+  grid-template-columns: 36px 1fr 1fr;
+  gap: 8px;
+}
+
+.set-row-display .set-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text-mid);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .entry-note {
@@ -496,22 +685,3 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ─── FORGOT PASSWORD ────────────────────────────── */
-
-.btn-forgot {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  padding: 4px 0;
-  text-align: center;
-  transition: color 0.15s;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.btn-forgot:hover { color: var(--text); }
