@@ -82,18 +82,34 @@
       </div>
       <div class="form-body">
 
+        <!-- EXERCISE PICKER -->
         <div class="field">
           <label>Exercise</label>
-          <input type="text" id="input-name" list="exercise-list" placeholder="e.g. Bench Press" autocomplete="off">
-          <datalist id="exercise-list"></datalist>
+          <div class="exercise-input-wrap">
+            <input type="text" id="input-name" placeholder="Search or type exercise..." autocomplete="off"
+              oninput="filterExercises(this.value)" onfocus="showPicker()" onblur="hidePicker()">
+            <div class="exercise-picker" id="exercise-picker"></div>
+          </div>
         </div>
 
-        <!-- DEFAULT MODE: all sets same weight/reps -->
+        <!-- DEFAULT MODE -->
         <div id="simple-mode">
           <div class="row-3">
             <div class="field">
               <label>Sets</label>
-              <input type="number" id="input-sets" placeholder="3" min="1" max="99" oninput="onSetsChange()">
+              <select id="input-sets">
+                <option value="">—</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
             </div>
             <div class="field">
               <label>Reps</label>
@@ -101,7 +117,7 @@
             </div>
             <div class="field">
               <label>Weight (lbs)</label>
-              <input type="text" id="input-weight" placeholder="e.g. 135">
+              <input type="text" id="input-weight" placeholder="135">
             </div>
           </div>
         </div>
@@ -113,7 +129,7 @@
           <span class="toggle-label">Different weight or reps per set</span>
         </label>
 
-        <!-- PER-SET BUILDER (hidden by default) -->
+        <!-- PER-SET BUILDER -->
         <div id="per-set-mode" style="display:none">
           <div class="set-builder" id="set-builder"></div>
           <button class="btn-add-set" onclick="addSetRow()">+ Add Set</button>

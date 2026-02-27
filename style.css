@@ -48,7 +48,6 @@ body {
   color: var(--text-muted);
   font-style: italic;
   margin-bottom: 40px;
-  letter-spacing: 0.5px;
 }
 
 .auth-tabs {
@@ -292,7 +291,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
-textarea {
+textarea,
+select {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -306,7 +306,15 @@ textarea {
   -webkit-appearance: none;
 }
 
-input:focus, textarea:focus {
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
@@ -314,6 +322,67 @@ input:focus, textarea:focus {
 textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* ─── EXERCISE PICKER ────────────────────────────── */
+
+.exercise-input-wrap { position: relative; }
+
+.exercise-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 200;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.exercise-picker.open { display: block; }
+
+.picker-group-label {
+  padding: 8px 14px 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+}
+
+.picker-item {
+  padding: 9px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  color: var(--text-mid);
+}
+
+.picker-item:hover,
+.picker-item.highlighted {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.picker-item mark {
+  background: none;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.picker-empty {
+  padding: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+}
 
 /* ─── PER-SET TOGGLE ─────────────────────────────── */
 
@@ -332,7 +401,6 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 }
 
 .per-set-toggle:hover { color: var(--text); }
-
 .per-set-toggle input[type="checkbox"] { display: none; }
 
 .toggle-track {
@@ -367,15 +435,9 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   background: var(--accent);
 }
 
-.toggle-label { font-size: 13px; }
-
 /* ─── SET BUILDER ────────────────────────────────── */
 
-.set-builder {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.set-builder { display: flex; flex-direction: column; gap: 8px; }
 
 .set-row {
   display: grid;
@@ -390,14 +452,9 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   font-size: 11px;
   color: var(--text-muted);
   text-align: center;
-  padding-top: 2px;
 }
 
-.set-row input {
-  padding: 8px 10px;
-  font-size: 14px;
-}
-
+.set-row input { padding: 8px 10px; font-size: 14px; }
 .set-row input::placeholder { color: var(--text-muted); font-size: 13px; }
 
 .btn-remove-set {
@@ -416,11 +473,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   flex-shrink: 0;
 }
 
-.btn-remove-set:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--danger-dim);
-}
+.btn-remove-set:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-dim); }
 
 .set-builder-header {
   display: grid;
@@ -440,8 +493,6 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   text-align: center;
 }
 
-.set-builder-header span:first-child { text-align: center; }
-
 .btn-add-set {
   background: none;
   border: 1px dashed var(--border);
@@ -457,11 +508,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   margin-top: 4px;
 }
 
-.btn-add-set:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-dim);
-}
+.btn-add-set:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
 
 /* ─── ADD BUTTON ─────────────────────────────────── */
 
@@ -536,10 +583,8 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 }
 
 .entry.flash { border-left: 3px solid var(--accent); }
-
 .entry-name { font-weight: 500; font-size: 15px; margin-bottom: 6px; }
 
-/* Simple mode summary */
 .entry-meta { display: flex; gap: 14px; flex-wrap: wrap; }
 
 .meta-chip {
@@ -558,13 +603,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   letter-spacing: 1px;
 }
 
-/* Per-set table in history */
-.sets-table {
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+.sets-table { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
 
 .sets-table-header {
   display: grid;
@@ -575,8 +614,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   margin-bottom: 2px;
 }
 
-.sets-table-header span,
-.set-row-display span {
+.sets-table-header span {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   letter-spacing: 1px;
@@ -584,18 +622,12 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   color: var(--text-muted);
 }
 
-.set-row-display {
-  display: grid;
-  grid-template-columns: 36px 1fr 1fr;
-  gap: 8px;
-}
+.set-row-display { display: grid; grid-template-columns: 36px 1fr 1fr; gap: 8px; }
 
-.set-row-display .set-val {
+.set-val {
   font-family: 'DM Mono', monospace;
   font-size: 12px;
   color: var(--text-mid);
-  text-transform: none;
-  letter-spacing: 0;
 }
 
 .entry-note {
@@ -620,11 +652,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   line-height: 1;
 }
 
-.btn-delete:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--danger-dim);
-}
+.btn-delete:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-dim); }
 
 /* ─── EMPTY STATE ─────────────────────────────────── */
 

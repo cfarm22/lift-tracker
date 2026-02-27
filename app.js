@@ -1,20 +1,83 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const SUPABASE_URL  = 'https://bskyxhsglprkqbjcjfad.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_pUk6zr9RYrA0rlxaeN6ZfQ_4MBzbY9P';
+const SUPABASE_URL = 'https://bskyxhsglprkqbjcjfad.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_pUk6zr9RYrA0rlxaeN6ZfQ_4MBzbY9P';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ─── EXERCISE LIBRARY ─────────────────────────────────────────────────────────
+const EXERCISES = {
+  'Chest': [
+    'Barbell Bench Press',
+    'Incline Barbell Bench Press',
+    'Decline Barbell Bench Press',
+    'Dumbbell Bench Press',
+    'Incline Dumbbell Bench Press',
+    'Push-Up',
+    'Dips',
+  ],
+  'Back': [
+    'Deadlift',
+    'Barbell Row',
+    'Pendlay Row',
+    'Pull-Up',
+    'Chin-Up',
+    'T-Bar Row',
+    'Seated Cable Row',
+    'Lat Pulldown',
+  ],
+  'Legs': [
+    'Barbell Back Squat',
+    'Front Squat',
+    'Romanian Deadlift',
+    'Bulgarian Split Squat',
+    'Leg Press',
+    'Hack Squat',
+    'Good Morning',
+    'Sumo Deadlift',
+  ],
+  'Shoulders': [
+    'Overhead Press',
+    'Push Press',
+    'Seated Barbell Press',
+    'Dumbbell Shoulder Press',
+    'Arnold Press',
+    'Upright Row',
+  ],
+  'Arms': [
+    'Barbell Curl',
+    'EZ-Bar Curl',
+    'Hammer Curl',
+    'Close-Grip Bench Press',
+    'Skull Crushers',
+    'Tricep Dips',
+    'Diamond Push-Up',
+  ],
+  'Core & Olympic': [
+    'Plank',
+    'Hanging Leg Raise',
+    'Ab Wheel Rollout',
+    'Power Clean',
+    'Hang Clean',
+    'Snatch',
+    'Clean and Jerk',
+  ],
+};
+
+// Flat list for search
+const ALL_EXERCISES = Object.values(EXERCISES).flat();
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let entries   = [];
-let authMode  = 'login';
-let viewMonth = new Date();
-let setRows   = []; // [{reps: '', weight: ''}] for per-set builder
+let entries        = [];
+let authMode       = 'login';
+let viewMonth      = new Date();
+let setRows        = [];
+let pickerIndex    = -1; // keyboard nav index in picker
+let pickerVisible  = false;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
   const hash   = window.location.hash;
   const params = new URLSearchParams(hash.replace('#', '?'));
-
   if (params.get('type') === 'recovery') {
     showScreen('reset');
     hideLoading();
@@ -22,11 +85,8 @@ async function init() {
   }
 
   const { data: { session } } = await db.auth.getSession();
-  if (session) {
-    await enterApp();
-  } else {
-    showScreen('auth');
-  }
+  if (session) await enterApp();
+  else showScreen('auth');
   hideLoading();
 
   db.auth.onAuthStateChange(async (event, session) => {
@@ -48,18 +108,15 @@ function switchTab(mode) {
   document.querySelectorAll('.auth-tab').forEach((t, i) => {
     t.classList.toggle('active', (i === 0 && mode === 'login') || (i === 1 && mode === 'signup'));
   });
-
   document.getElementById('password-field').style.display = isForgot ? 'none' : '';
   document.getElementById('confirm-field').style.display  = mode === 'signup' ? '' : 'none';
 
   const labels = { login: 'Sign In', signup: 'Create Account', forgot: 'Send Reset Link' };
   document.getElementById('auth-submit').textContent = labels[mode];
-
-  document.getElementById('forgot-btn').textContent = isForgot ? '← Back to sign in' : 'Forgot password?';
-  document.getElementById('forgot-btn').onclick = isForgot ? () => switchTab('login') : () => switchTab('forgot');
-
-  document.getElementById('auth-error').textContent = '';
-  document.getElementById('auth-error').style.color = 'var(--danger)';
+  document.getElementById('forgot-btn').textContent  = isForgot ? '← Back to sign in' : 'Forgot password?';
+  document.getElementById('forgot-btn').onclick      = isForgot ? () => switchTab('login') : () => switchTab('forgot');
+  document.getElementById('auth-error').textContent  = '';
+  document.getElementById('auth-error').style.color  = 'var(--danger)';
 }
 
 async function handleAuth() {
@@ -69,9 +126,7 @@ async function handleAuth() {
   const errEl    = document.getElementById('auth-error');
   const btn      = document.getElementById('auth-submit');
 
-  errEl.textContent = '';
-  errEl.style.color = 'var(--danger)';
-
+  errEl.textContent = ''; errEl.style.color = 'var(--danger)';
   if (!email) { errEl.textContent = 'Please enter your email.'; return; }
 
   if (authMode === 'forgot') {
@@ -80,7 +135,7 @@ async function handleAuth() {
       redirectTo: window.location.origin + window.location.pathname,
     });
     btn.disabled = false; btn.textContent = 'Send Reset Link';
-    if (error) { errEl.textContent = error.message; }
+    if (error) errEl.textContent = error.message;
     else { errEl.style.color = 'var(--accent)'; errEl.textContent = 'Reset link sent — check your email!'; }
     return;
   }
@@ -99,7 +154,7 @@ async function handleAuth() {
   } else {
     const { error } = await db.auth.signUp({ email, password });
     if (error) { errEl.textContent = error.message; btn.disabled = false; btn.textContent = 'Create Account'; }
-    else { errEl.style.color = 'var(--accent)'; errEl.textContent = 'Check your email to confirm your account!'; btn.disabled = false; btn.textContent = 'Create Account'; }
+    else { errEl.style.color = 'var(--accent)'; errEl.textContent = 'Check your email to confirm!'; btn.disabled = false; btn.textContent = 'Create Account'; }
   }
 }
 
@@ -124,9 +179,7 @@ async function handleSetNewPassword() {
   }
 }
 
-async function signOut() {
-  await db.auth.signOut();
-}
+async function signOut() { await db.auth.signOut(); }
 
 // ─── APP ENTRY ────────────────────────────────────────────────────────────────
 async function enterApp() {
@@ -139,21 +192,17 @@ async function enterApp() {
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 async function loadEntries() {
   const { data, error } = await db
-    .from('workouts')
-    .select('*')
-    .order('created_at', { ascending: false });
-
+    .from('workouts').select('*').order('created_at', { ascending: false });
   if (error) { showToast('Error loading workouts'); return; }
   entries = data || [];
   renderHistory();
   updateStats();
-  updateSuggestions();
 }
 
 async function addEntry() {
-  const name  = document.getElementById('input-name').value.trim();
-  const notes = document.getElementById('input-notes').value.trim();
-  const btn   = document.getElementById('btn-add');
+  const name    = document.getElementById('input-name').value.trim();
+  const notes   = document.getElementById('input-notes').value.trim();
+  const btn     = document.getElementById('btn-add');
   const isPerSet = document.getElementById('per-set-checkbox').checked;
 
   if (!name) { document.getElementById('input-name').focus(); showToast('Enter an exercise name!'); return; }
@@ -161,17 +210,15 @@ async function addEntry() {
   let record = { sets: null, reps: null, weight: null, sets_data: null };
 
   if (isPerSet) {
-    // Collect set rows
-    const rows = [...document.querySelectorAll('.set-row')].map((row, i) => ({
+    const rows = [...document.querySelectorAll('.set-row')].map(row => ({
       reps:   row.querySelector('.set-reps').value.trim(),
       weight: row.querySelector('.set-weight').value.trim(),
     }));
-
     if (rows.length === 0) { showToast('Add at least one set!'); return; }
     record.sets_data = rows;
     record.sets = rows.length;
   } else {
-    const sets   = document.getElementById('input-sets').value.trim();
+    const sets   = document.getElementById('input-sets').value;
     const reps   = document.getElementById('input-reps').value.trim();
     const weight = document.getElementById('input-weight').value.trim();
     record.sets   = sets   ? parseInt(sets)  : null;
@@ -180,26 +227,21 @@ async function addEntry() {
   }
 
   btn.disabled = true; btn.textContent = 'SAVING...';
-
   const { data: { user } } = await db.auth.getUser();
 
   const { data, error } = await db
     .from('workouts')
     .insert({ user_id: user.id, name, notes: notes || null, ...record })
-    .select()
-    .single();
+    .select().single();
 
   btn.disabled = false; btn.textContent = '+ ADD TO LOG';
-
   if (error) { showToast('Error saving workout'); console.error(error); return; }
 
   entries.unshift(data);
   viewMonth = new Date();
   renderHistory();
   updateStats();
-  updateSuggestions();
   resetForm();
-
   showToast(`${name} logged ✓`);
 
   setTimeout(() => {
@@ -212,10 +254,100 @@ async function deleteEntry(id) {
   const { error } = await db.from('workouts').delete().eq('id', id);
   if (error) { showToast('Error deleting entry'); return; }
   entries = entries.filter(e => e.id !== id);
-  renderHistory();
-  updateStats();
+  renderHistory(); updateStats();
   showToast('Entry removed');
 }
+
+// ─── EXERCISE PICKER ──────────────────────────────────────────────────────────
+function filterExercises(query) {
+  const picker = document.getElementById('exercise-picker');
+  pickerIndex = -1;
+  query = query.trim().toLowerCase();
+
+  // Also include previously used custom exercises from history
+  const usedNames = [...new Set(entries.map(e => e.name))].filter(
+    n => !ALL_EXERCISES.includes(n)
+  );
+
+  if (!query) {
+    // Show full grouped library
+    let html = '';
+    for (const [group, exercises] of Object.entries(EXERCISES)) {
+      html += `<div class="picker-group-label">${group}</div>`;
+      html += exercises.map(ex => `
+        <div class="picker-item" onmousedown="selectExercise('${esc(ex)}')">${ex}</div>
+      `).join('');
+    }
+    if (usedNames.length > 0) {
+      html += `<div class="picker-group-label">Recent Custom</div>`;
+      html += usedNames.map(n => `
+        <div class="picker-item" onmousedown="selectExercise('${esc(n)}')">${esc(n)}</div>
+      `).join('');
+    }
+    picker.innerHTML = html;
+  } else {
+    // Fuzzy filter across all exercises + custom
+    const allNames = [...ALL_EXERCISES, ...usedNames];
+    const matches  = allNames.filter(n => n.toLowerCase().includes(query));
+
+    if (matches.length === 0) {
+      picker.innerHTML = `<div class="picker-empty">No match — just type to use "${esc(query)}"</div>`;
+    } else {
+      picker.innerHTML = matches.map(ex => {
+        const highlighted = ex.replace(
+          new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+          '<mark>$1</mark>'
+        );
+        return `<div class="picker-item" onmousedown="selectExercise('${esc(ex)}')">${highlighted}</div>`;
+      }).join('');
+    }
+  }
+
+  picker.classList.add('open');
+  pickerVisible = true;
+}
+
+function selectExercise(name) {
+  document.getElementById('input-name').value = name;
+  hidePicker();
+  document.getElementById('input-sets').focus();
+}
+
+function showPicker() {
+  filterExercises(document.getElementById('input-name').value);
+}
+
+function hidePicker() {
+  setTimeout(() => {
+    document.getElementById('exercise-picker').classList.remove('open');
+    pickerVisible = false;
+    pickerIndex = -1;
+  }, 150);
+}
+
+// Keyboard navigation in picker
+document.addEventListener('keydown', e => {
+  if (!pickerVisible) return;
+  const items = document.querySelectorAll('.picker-item');
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    pickerIndex = Math.min(pickerIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('highlighted', i === pickerIndex));
+    items[pickerIndex]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    pickerIndex = Math.max(pickerIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('highlighted', i === pickerIndex));
+    items[pickerIndex]?.scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter' && pickerIndex >= 0) {
+    e.preventDefault();
+    selectExercise(items[pickerIndex].textContent.trim());
+  } else if (e.key === 'Escape') {
+    hidePicker();
+  }
+});
 
 // ─── SET BUILDER ──────────────────────────────────────────────────────────────
 function togglePerSet() {
@@ -224,16 +356,13 @@ function togglePerSet() {
   document.getElementById('per-set-mode').style.display = isPerSet ? '' : 'none';
 
   if (isPerSet && document.querySelectorAll('.set-row').length === 0) {
-    // Pre-populate from whatever was in the simple fields
     const sets   = parseInt(document.getElementById('input-sets').value) || 3;
     const reps   = document.getElementById('input-reps').value.trim();
     const weight = document.getElementById('input-weight').value.trim();
-    for (let i = 0; i < sets; i++) addSetRow(reps, weight);
+    setRows = [];
+    for (let i = 0; i < sets; i++) setRows.push({ reps, weight });
+    renderSetBuilder();
   }
-}
-
-function onSetsChange() {
-  // No-op in simple mode — just keep fields in sync naturally
 }
 
 function addSetRow(defaultReps = '', defaultWeight = '') {
@@ -248,28 +377,19 @@ function removeSetRow(index) {
 
 function renderSetBuilder() {
   const builder = document.getElementById('set-builder');
-
-  if (setRows.length === 0) {
-    builder.innerHTML = '';
-    return;
-  }
+  if (setRows.length === 0) { builder.innerHTML = ''; return; }
 
   builder.innerHTML = `
     <div class="set-builder-header">
-      <span>#</span>
-      <span>Reps</span>
-      <span>Weight (lbs)</span>
-      <span></span>
+      <span>#</span><span>Reps</span><span>Weight (lbs)</span><span></span>
     </div>
     ${setRows.map((row, i) => `
       <div class="set-row">
         <div class="set-num">${i + 1}</div>
         <input class="set-reps" type="number" placeholder="10" min="1" max="999"
-          value="${esc(row.reps)}"
-          oninput="setRows[${i}].reps = this.value">
+          value="${esc(row.reps)}" oninput="setRows[${i}].reps = this.value">
         <input class="set-weight" type="text" placeholder="135"
-          value="${esc(row.weight)}"
-          oninput="setRows[${i}].weight = this.value">
+          value="${esc(row.weight)}" oninput="setRows[${i}].weight = this.value">
         <button class="btn-remove-set" onclick="removeSetRow(${i})" title="Remove">✕</button>
       </div>
     `).join('')}
@@ -278,7 +398,7 @@ function renderSetBuilder() {
 
 function resetForm() {
   document.getElementById('input-name').value   = '';
-  document.getElementById('input-sets').value   = '';
+  document.getElementById('input-sets').value   = '3';
   document.getElementById('input-reps').value   = '';
   document.getElementById('input-weight').value = '';
   document.getElementById('input-notes').value  = '';
@@ -287,7 +407,8 @@ function resetForm() {
   document.getElementById('per-set-mode').style.display = 'none';
   setRows = [];
   document.getElementById('set-builder').innerHTML = '';
-  document.getElementById('input-name').focus();
+  document.getElementById('exercise-picker').classList.remove('open');
+  pickerVisible = false;
 }
 
 // ─── MONTH NAV ────────────────────────────────────────────────────────────────
@@ -307,9 +428,8 @@ function updateCalLabel() {
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function renderHistory() {
   updateCalLabel();
-
   const container = document.getElementById('history');
-  const query = document.getElementById('search')?.value?.toLowerCase() || '';
+  const query     = document.getElementById('search')?.value?.toLowerCase() || '';
 
   const monthStart = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
   const monthEnd   = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0, 23, 59, 59);
@@ -332,7 +452,7 @@ function renderHistory() {
 
   const groups = {};
   filtered.forEach(e => {
-    const d = new Date(e.created_at);
+    const d   = new Date(e.created_at);
     const key = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
     if (!groups[key]) groups[key] = [];
     groups[key].push(e);
@@ -361,13 +481,10 @@ function renderHistory() {
 }
 
 function renderEntryMeta(e) {
-  // Per-set data stored as JSON
   if (e.sets_data && Array.isArray(e.sets_data) && e.sets_data.length > 0) {
     return `
       <div class="sets-table">
-        <div class="sets-table-header">
-          <span>#</span><span>Reps</span><span>Weight</span>
-        </div>
+        <div class="sets-table-header"><span>#</span><span>Reps</span><span>Weight</span></div>
         ${e.sets_data.map((s, i) => `
           <div class="set-row-display">
             <span class="set-val">${i + 1}</span>
@@ -377,8 +494,6 @@ function renderEntryMeta(e) {
         `).join('')}
       </div>`;
   }
-
-  // Simple mode
   return `
     <div class="entry-meta">
       ${e.sets   ? `<span class="meta-chip"><span class="chip-label">Sets</span> ${e.sets}</span>` : ''}
@@ -387,19 +502,12 @@ function renderEntryMeta(e) {
     </div>`;
 }
 
-function toggleDay(el) {
-  el.nextElementSibling.classList.toggle('open');
-}
+function toggleDay(el) { el.nextElementSibling.classList.toggle('open'); }
 
 function updateStats() {
   document.getElementById('stat-total').textContent = entries.length;
   const days = new Set(entries.map(e => new Date(e.created_at).toDateString())).size;
   document.getElementById('stat-days').textContent = days;
-}
-
-function updateSuggestions() {
-  const names = [...new Set(entries.map(e => e.name))];
-  document.getElementById('exercise-list').innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
 }
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
@@ -428,17 +536,18 @@ function esc(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Global Enter key handler for form submission
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    if (document.getElementById('app-screen').style.display !== 'none') {
-      if (e.target.id !== 'input-notes' && e.target.tagName !== 'TEXTAREA') addEntry();
-    }
-    if (document.getElementById('auth-screen').style.display !== 'none') {
-      if (e.target.tagName === 'INPUT') handleAuth();
-    }
-    if (document.getElementById('reset-screen').style.display !== 'none') {
-      if (e.target.tagName === 'INPUT') handleSetNewPassword();
-    }
+  if (e.key !== 'Enter') return;
+  if (pickerVisible) return; // picker handles its own Enter
+  if (document.getElementById('app-screen').style.display !== 'none') {
+    if (e.target.id !== 'input-notes' && e.target.tagName !== 'TEXTAREA') addEntry();
+  }
+  if (document.getElementById('auth-screen').style.display !== 'none') {
+    if (e.target.tagName === 'INPUT') handleAuth();
+  }
+  if (document.getElementById('reset-screen').style.display !== 'none') {
+    if (e.target.tagName === 'INPUT') handleSetNewPassword();
   }
 });
 
