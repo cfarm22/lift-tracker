@@ -127,7 +127,7 @@ async function loadEntries() {
   const { data, error } = await db.from('workouts').select('*').order('created_at', { ascending: false });
   if (error) { showToast('Error loading workouts'); return; }
   entries = data || [];
-  renderHistory(); updateStats();
+  renderHistory(); updateStats(); updateMascot();
 }
 
 async function addEntry() {
@@ -162,7 +162,7 @@ async function addEntry() {
 
   entries.unshift(data);
   viewMonth = new Date();
-  renderHistory(); updateStats(); renderCalendar();
+  renderHistory(); updateStats(); updateMascot(); renderCalendar();
   resetForm();
   showToast(`${name} logged ✓`);
   setTimeout(() => {
@@ -175,7 +175,7 @@ async function deleteEntry(id) {
   const { error } = await db.from('workouts').delete().eq('id', id);
   if (error) { showToast('Error deleting entry'); return; }
   entries = entries.filter(e => e.id !== id);
-  renderHistory(); updateStats(); renderCalendar();
+  renderHistory(); updateStats(); updateMascot(); renderCalendar();
   showToast('Entry removed');
 }
 
@@ -645,6 +645,33 @@ function updateStats() {
 function closeModal() {
   document.getElementById('modal-overlay').style.display = 'none';
   document.getElementById('day-modal').style.display     = 'none';
+}
+
+// ─── STREAK & MASCOT ──────────────────────────────────────────────────────────
+function calculateStreak() {
+  if (entries.length === 0) return 0;
+  const loggedDates = new Set(entries.map(e => toDateStr(new Date(e.created_at))));
+  const today = toDateStr(new Date());
+  if (!loggedDates.has(today)) return 0;
+  let streak = 0;
+  const cursor = new Date();
+  while (loggedDates.has(toDateStr(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function updateMascot() {
+  const streak = calculateStreak();
+  const level  = streak >= 7 ? 4 : streak >= 4 ? 3 : streak >= 2 ? 2 : streak >= 1 ? 1 : 0;
+  document.querySelectorAll('.mascot-svg').forEach(el => el.setAttribute('data-level', level));
+  const badge = document.getElementById('streak-badge');
+  const count = document.getElementById('streak-count');
+  if (badge && count) {
+    if (streak > 0) { count.textContent = streak + 'd'; badge.style.display = ''; }
+    else            { badge.style.display = 'none'; }
+  }
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
