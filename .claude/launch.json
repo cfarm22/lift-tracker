@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static (python)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "/Users/cfarmer/Documents/GitHub/lift-tracker"],
+      "port": 8080
+    },
+    {
+      "name": "static (npx serve)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "/Users/cfarmer/Documents/GitHub/lift-tracker", "-p", "8080"],
+      "port": 8080
+    }
+  ]
+}

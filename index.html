@@ -13,7 +13,30 @@
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="screen">
   <div class="auth-wrap">
-    <div class="auth-logo">LIFT</div>
+    <div class="auth-logo-area">
+      <svg class="mascot-svg auth-mascot" id="mascot-auth" data-level="0" viewBox="0 0 120 48" xmlns="http://www.w3.org/2000/svg" aria-label="LIFT dumbbell">
+        <g class="plates-4">
+          <rect x="4"   y="6"  width="8" height="36" rx="2"/>
+          <rect x="108" y="6"  width="8" height="36" rx="2"/>
+        </g>
+        <g class="plates-3">
+          <rect x="12"  y="8"  width="8" height="32" rx="2"/>
+          <rect x="100" y="8"  width="8" height="32" rx="2"/>
+        </g>
+        <g class="plates-2">
+          <rect x="20"  y="10" width="8" height="28" rx="2"/>
+          <rect x="92"  y="10" width="8" height="28" rx="2"/>
+        </g>
+        <g class="plates-1">
+          <rect x="28"  y="12" width="8" height="24" rx="2"/>
+          <rect x="84"  y="12" width="8" height="24" rx="2"/>
+        </g>
+        <rect class="collar" x="36" y="14" width="8" height="20" rx="2"/>
+        <rect class="collar" x="76" y="14" width="8" height="20" rx="2"/>
+        <rect class="bar"    x="44" y="21" width="32" height="6"  rx="3"/>
+      </svg>
+      <div class="auth-logo">LIFT</div>
+    </div>
     <div class="auth-tagline">Track every rep. Own your progress.</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
@@ -42,7 +65,30 @@
 <!-- RESET PASSWORD SCREEN -->
 <div id="reset-screen" class="screen" style="display:none">
   <div class="auth-wrap">
-    <div class="auth-logo">LIFT</div>
+    <div class="auth-logo-area">
+      <svg class="mascot-svg auth-mascot" data-level="0" viewBox="0 0 120 48" xmlns="http://www.w3.org/2000/svg" aria-label="LIFT dumbbell">
+        <g class="plates-4">
+          <rect x="4"   y="6"  width="8" height="36" rx="2"/>
+          <rect x="108" y="6"  width="8" height="36" rx="2"/>
+        </g>
+        <g class="plates-3">
+          <rect x="12"  y="8"  width="8" height="32" rx="2"/>
+          <rect x="100" y="8"  width="8" height="32" rx="2"/>
+        </g>
+        <g class="plates-2">
+          <rect x="20"  y="10" width="8" height="28" rx="2"/>
+          <rect x="92"  y="10" width="8" height="28" rx="2"/>
+        </g>
+        <g class="plates-1">
+          <rect x="28"  y="12" width="8" height="24" rx="2"/>
+          <rect x="84"  y="12" width="8" height="24" rx="2"/>
+        </g>
+        <rect class="collar" x="36" y="14" width="8" height="20" rx="2"/>
+        <rect class="collar" x="76" y="14" width="8" height="20" rx="2"/>
+        <rect class="bar"    x="44" y="21" width="32" height="6"  rx="3"/>
+      </svg>
+      <div class="auth-logo">LIFT</div>
+    </div>
     <div class="auth-tagline">Choose a new password.</div>
     <div class="auth-form">
       <div class="field">
@@ -63,7 +109,30 @@
 <div id="app-screen" class="screen" style="display:none">
 
   <header>
-    <div class="logo">LIFT</div>
+    <div class="logo">
+      <svg class="mascot-svg" id="mascot-header" data-level="0" viewBox="0 0 120 48" xmlns="http://www.w3.org/2000/svg" aria-label="LIFT dumbbell">
+        <g class="plates-4">
+          <rect x="4"   y="6"  width="8" height="36" rx="2"/>
+          <rect x="108" y="6"  width="8" height="36" rx="2"/>
+        </g>
+        <g class="plates-3">
+          <rect x="12"  y="8"  width="8" height="32" rx="2"/>
+          <rect x="100" y="8"  width="8" height="32" rx="2"/>
+        </g>
+        <g class="plates-2">
+          <rect x="20"  y="10" width="8" height="28" rx="2"/>
+          <rect x="92"  y="10" width="8" height="28" rx="2"/>
+        </g>
+        <g class="plates-1">
+          <rect x="28"  y="12" width="8" height="24" rx="2"/>
+          <rect x="84"  y="12" width="8" height="24" rx="2"/>
+        </g>
+        <rect class="collar" x="36" y="14" width="8" height="20" rx="2"/>
+        <rect class="collar" x="76" y="14" width="8" height="20" rx="2"/>
+        <rect class="bar"    x="44" y="21" width="32" height="6"  rx="3"/>
+      </svg>
+      <span class="streak-badge" id="streak-badge" style="display:none">🔥 <span id="streak-count">0</span></span>
+    </div>
     <div class="header-right">
       <div class="header-stats">
         <span><b id="stat-total">0</b> exercises</span>

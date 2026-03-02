@@ -1,17 +1,17 @@
 :root {
-  --bg: #0d0d0d;
-  --surface: #161616;
-  --surface2: #1e1e1e;
-  --border: #272727;
-  --accent: #c8f135;
-  --accent-dim: rgba(200,241,53,0.1);
-  --text: #f0f0f0;
-  --text-muted: #5a5a5a;
-  --text-mid: #888;
-  --danger: #ff4d4d;
-  --danger-dim: rgba(255,77,77,0.08);
-  --plan-color: #5b8af5;
-  --plan-dim: rgba(91,138,245,0.12);
+  --bg: #16181f;
+  --surface: #1e2029;
+  --surface2: #252834;
+  --border: #2e3245;
+  --accent: #6eb8ff;
+  --accent-dim: rgba(110,184,255,0.12);
+  --text: #e8eaf4;
+  --text-muted: #525670;
+  --text-mid: #7e83a8;
+  --danger: #ff6b6b;
+  --danger-dim: rgba(255,107,107,0.08);
+  --plan-color: #a78bfa;
+  --plan-dim: rgba(167,139,250,0.12);
   --radius: 6px;
 }
 
@@ -121,17 +121,16 @@ header {
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  background: rgba(13,13,13,0.94);
+  background: rgba(22,24,31,0.94);
   backdrop-filter: blur(14px);
   z-index: 100;
   position: sticky;
   top: 0;
 }
 .logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px;
-  letter-spacing: 4px;
-  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .header-right { display: flex; align-items: center; gap: 24px; }
 .header-stats {
@@ -916,3 +915,89 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── MASCOT DUMBBELL ────────────────────────────── */
+.mascot-svg {
+  width: 88px;
+  height: auto;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.mascot-svg .bar,
+.mascot-svg .collar {
+  fill: var(--text-muted);
+  transition: fill 0.5s ease;
+}
+
+.mascot-svg .plates-1,
+.mascot-svg .plates-2,
+.mascot-svg .plates-3,
+.mascot-svg .plates-4 {
+  fill: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* ── level 1: 1 day ── */
+.mascot-svg[data-level="1"] .plates-1 { opacity: 0.65; }
+.mascot-svg[data-level="1"] .bar,
+.mascot-svg[data-level="1"] .collar { fill: var(--text-mid); }
+
+/* ── level 2: 2–3 days ── */
+.mascot-svg[data-level="2"] .plates-1 { opacity: 0.85; }
+.mascot-svg[data-level="2"] .plates-2 { opacity: 0.65; }
+.mascot-svg[data-level="2"] .bar,
+.mascot-svg[data-level="2"] .collar { fill: var(--text); }
+
+/* ── level 3: 4–6 days ── */
+.mascot-svg[data-level="3"] .plates-1,
+.mascot-svg[data-level="3"] .plates-2 { opacity: 1; }
+.mascot-svg[data-level="3"] .plates-3 { opacity: 0.75; }
+.mascot-svg[data-level="3"] .bar,
+.mascot-svg[data-level="3"] .collar { fill: var(--accent); }
+
+/* ── level 4: 7+ days ── */
+.mascot-svg[data-level="4"] .plates-1,
+.mascot-svg[data-level="4"] .plates-2,
+.mascot-svg[data-level="4"] .plates-3 { opacity: 1; }
+.mascot-svg[data-level="4"] .plates-4 { opacity: 0.85; }
+.mascot-svg[data-level="4"] .bar,
+.mascot-svg[data-level="4"] .collar { fill: var(--accent); }
+.mascot-svg[data-level="4"] {
+  filter: drop-shadow(0 0 8px rgba(110,184,255,0.55));
+  animation: mascot-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes mascot-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
+}
+
+.streak-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* auth screen mascot */
+.auth-logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.auth-mascot {
+  width: 160px;
+  height: auto;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 760px) {
+  .mascot-svg  { width: 72px; }
+  .auth-mascot { width: 120px; }
+}
